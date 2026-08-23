@@ -522,13 +522,102 @@ case 'drag':
                 sandbox.appendChild(cf);
                 break;
 
-            case 'alt-drag':
-                title.innerText = "Alt + 드래그 (바로가기)";
-                desc.innerText = "Alt 키를 누른 채 파일을 끌어보세요. 바로가기 화살표가 생깁니다.";
-                const af = createObj('folder', '원본 폴더', 100, 150);
-                setupDrag(af, 'shortcut');
-                sandbox.appendChild(af);
-                break;
+case 'alt-drag':
+    title.innerText = "Alt + 드래그 (바로가기 만들기)";
+    desc.innerText = "1. [Alt] 키를 꾹 누르세요. 2. 파일을 다른 곳으로 끌어서 놓으세요. 화살표 모양의 '바로가기'가 생깁니다.";
+
+    // 1. 연습 환경 셋팅: 여러 개의 파일과 폴더 배치
+    const items = [
+        { type: 'folder', name: '가족 사진', x: 50, y: 50 },
+        { type: 'image', name: '여행 메모', x: 200, y: 50 },
+        { type: 'folder', name: '중요 서류', x: 50, y: 180 },
+        { type: 'image', name: '할일 목록', x: 200, y: 180 }
+    ];
+
+    items.forEach(data => {
+        const obj = createObj(data.type, data.name, data.x, data.y);
+        sandbox.appendChild(obj);
+
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+        let ghostObj = null; // 드래그 중 보여줄 그림자(복제본)
+
+        obj.onmousedown = (e) => {
+            // Alt 키를 누르지 않았을 때 안내
+            if (!keys.alt) {
+                alert("키보드 왼쪽의 [Alt] 키를 먼저 꾹 누른 상태에서 끌어보세요!");
+                return;
+            }
+
+            isDragging = true;
+            offset.x = e.clientX - obj.offsetLeft;
+            offset.y = e.clientY - obj.offsetTop;
+            
+            // 드래그 중임을 알리는 반투명 복제본 생성
+            ghostObj = obj.cloneNode(true);
+            ghostObj.style.opacity = "0.5";
+            ghostObj.style.position = "absolute";
+            ghostObj.style.zIndex = "1000";
+            ghostObj.classList.add('shortcut-icon'); // 화살표 표시 클래스 미리 적용
+            sandbox.appendChild(ghostObj);
+        };
+
+        window.onmousemove = (e) => {
+            if (!isDragging || !ghostObj) return;
+
+            const x = e.clientX - offset.x;
+            const y = e.clientY - offset.y;
+
+            // 그림자 객체를 마우스 따라 이동
+            ghostObj.style.left = x + 'px';
+            ghostObj.style.top = y + 'px';
+        };
+
+        window.onmouseup = (e) => {
+            if (!isDragging || !ghostObj) return;
+
+            // 완료 조건 체크: Alt 키를 유지하고 있는가?
+            if (keys.alt) {
+                // 실제 바로가기 아이콘 생성 (반투명 해제 및 확정)
+                ghostObj.style.opacity = "1";
+                ghostObj.querySelector('.obj-label').innerText += " - 바로가기";
+                
+                // 성공 메시지
+                completeEx("바로가기 생성 성공! 화살표 아이콘을 확인하세요.");
+            } else {
+                // Alt를 중간에 뗐다면 취소
+                ghostObj.remove();
+                alert("드래그를 마칠 때까지 [Alt] 키를 떼지 마세요!");
+            }
+
+            isDragging = false;
+            ghostObj = null;
+        };
+    });
+
+    // 바로가기 아이콘용 화살표 스타일 추가 (CSS)
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .shortcut-icon::before {
+            content: '➚';
+            position: absolute;
+            left: 5px;
+            bottom: 25px;
+            width: 25px;
+            height: 25px;
+            background: white;
+            border: 1px solid #333;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: blue;
+            z-index: 10;
+        }
+    `;
+    document.head.appendChild(style);
+    break;
 
             case 'ctrl-wheel':
                 title.innerText = "Ctrl + 휠 (확대/축소)";
