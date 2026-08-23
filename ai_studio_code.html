@@ -372,13 +372,73 @@
                 sandbox.appendChild(rf);
                 break;
 
-            case 'drag':
-                title.innerText = "드래그 앤 드롭";
-                desc.innerText = "파일을 마우스로 꾹 누른 채 옆으로 끌어서 옮겨보세요.";
-                const df = createObj('image', '풍경 사진', 100, 150);
-                setupDrag(df);
-                sandbox.appendChild(df);
-                break;
+case 'drag':
+    title.innerText = "드래그 앤 드롭";
+    desc.innerText = "파일을 마우스로 꾹 누른 채 '멀리' 끌어서 옮겨보세요. (20% 이상 이동)";
+    
+    // 시작 위치(100, 150)에 객체 생성
+    const startPos = { x: 100, y: 150 };
+    const df = createObj('image', '풍경 사진', startPos.x, startPos.y);
+    
+    let isDragging = false;
+    let offset = { x: 0, y: 0 };
+    let successTriggered = false; // 한 번 성공하면 중복 실행 방지
+
+    df.onmousedown = (e) => {
+        if (successTriggered) return;
+        isDragging = true;
+        offset.x = e.clientX - df.offsetLeft;
+        offset.y = e.clientY - df.offsetTop;
+        df.style.zIndex = 1000; // 드래그 시 맨 위로
+    };
+
+    window.onmousemove = (e) => {
+        if (!isDragging) return;
+
+        // 현재 위치 계산 및 이동
+        const currentX = e.clientX - offset.x;
+        const currentY = e.clientY - offset.y;
+        df.style.left = currentX + 'px';
+        df.style.top = currentY + 'px';
+
+        // 샌드박스 크기 측정
+        const sWidth = sandbox.clientWidth;
+        const sHeight = sandbox.clientHeight;
+
+        // 이동 거리 계산 (절대값)
+        const moveDistX = Math.abs(currentX - startPos.x);
+        const moveDistY = Math.abs(currentY - startPos.y);
+
+        // 성공 조건: 가로 또는 세로로 샌드박스의 20% 이상 이동했을 때 실시간 시각 피드백
+        if (moveDistX > sWidth * 0.2 || moveDistY > sHeight * 0.2) {
+            df.style.outline = "5px solid var(--success-color)"; // 목표 거리 도달 표시
+        } else {
+            df.style.outline = "none";
+        }
+    };
+
+    window.onmouseup = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const sWidth = sandbox.clientWidth;
+        const sHeight = sandbox.clientHeight;
+        const moveDistX = Math.abs(df.offsetLeft - startPos.x);
+        const moveDistY = Math.abs(df.offsetTop - startPos.y);
+
+        // 최종 드롭 시점에 20% 이상 이동했는지 확인
+        if ((moveDistX > sWidth * 0.2 || moveDistY > sHeight * 0.2) && !successTriggered) {
+            successTriggered = true;
+            df.style.outline = "none";
+            completeEx("드래그 성공! 아주 잘하셨습니다.");
+        } else if (!successTriggered) {
+            // 충분히 이동하지 않았을 때 안내
+            alert("조금 더 멀리 끌어서 옮겨보세요!");
+        }
+    };
+
+    sandbox.appendChild(df);
+    break;
 
             case 'scroll':
                 title.innerText = "스크롤 (휠)";
