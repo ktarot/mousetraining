@@ -6,680 +6,433 @@
     <title>시니어 마우스 & 키보드 마스터</title>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --primary-color: #0056b3;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --text-main: #212529;
-            --sidebar-bg: #343a40;
+            --desktop-bg: #0078d7;
+            --folder-color: #ffca28;
+            --file-color: #ffffff;
+            --success-color: #2ecc71;
+            --sidebar-width: 280px;
         }
 
         body, html {
             margin: 0; padding: 0;
-            font-family: 'Malgun Gothic', sans-serif;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--bg-color);
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            height: 100%; overflow: hidden;
+            background-color: #2c3e50;
         }
 
-        /* 레이아웃 */
-        .container {
+        .app-container {
             display: flex;
             height: 100vh;
         }
 
         /* 사이드바 메뉴 */
         nav {
-            width: 300px;
-            background-color: var(--sidebar-bg);
+            width: var(--sidebar-width);
+            background: #34495e;
             color: white;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .nav-header {
             padding: 20px;
-            background-color: #1a1e21;
-            text-align: center;
-        }
-
-        .nav-header h2 { margin: 0; font-size: 22px; color: #ffc107; }
-
-        .menu-list {
-            flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            z-index: 100;
         }
 
-        .menu-section {
-            margin-bottom: 20px;
+        nav h2 { font-size: 20px; border-bottom: 2px solid #5d6d7e; padding-bottom: 10px; color: #ecf0f1; }
+        .menu-btn {
+            display: block; width: 100%; padding: 12px; margin: 8px 0;
+            background: #5d6d7e; color: white; border: none; border-radius: 5px;
+            text-align: left; font-size: 16px; cursor: pointer; transition: 0.2s;
         }
-
-        .menu-section h3 {
-            font-size: 16px;
-            color: #adb5bd;
-            border-bottom: 1px solid #495057;
-            padding-bottom: 5px;
-            margin-left: 10px;
-        }
-
-        .menu-item {
-            width: 100%;
-            padding: 15px;
-            background: none;
-            border: none;
-            color: #e9ecef;
-            text-align: left;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-            margin-bottom: 5px;
-        }
-
-        .menu-item:hover { background-color: #495057; }
-        .menu-item.active { background-color: var(--primary-color); color: white; font-weight: bold; }
+        .menu-btn:hover { background: #3498db; }
+        .menu-btn.active { background: #3498db; font-weight: bold; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
 
         /* 메인 연습 영역 */
         main {
             flex: 1;
             display: flex;
             flex-direction: column;
-            position: relative;
-        }
-
-        #instruction-bar {
-            background-color: white;
-            padding: 20px 40px;
-            border-bottom: 2px solid #dee2e6;
-            min-height: 80px;
-        }
-
-        #instruction-bar h2 { margin: 0 0 10px 0; color: var(--primary-color); }
-        #instruction-bar p { margin: 0; font-size: 20px; line-height: 1.5; font-weight: bold; }
-
-        #sandbox {
-            flex: 1;
-            margin: 20px;
-            background-color: #fff;
-            border: 3px solid #dee2e6;
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
-            background-size: 40px 40px; /* 그리드 배경 */
-        }
-
-        /* 오브젝트 디자인 */
-        .obj {
-            position: absolute;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: transform 0.1s;
+            position: relative;
         }
 
-        .folder {
-            width: 100px;
-            height: 100px;
-        }
-        .folder-icon {
-            font-size: 60px;
-            color: #ffca28;
-        }
-        .obj-label {
-            margin-top: 5px;
-            font-weight: bold;
-            font-size: 14px;
-            background: rgba(255,255,255,0.8);
-            padding: 2px 5px;
-            border-radius: 4px;
+        #instruction {
+            background: #f1c40f; color: #2c3e50;
+            padding: 15px 30px; font-size: 20px; font-weight: bold;
+            width: 100%; text-align: center; box-sizing: border-box;
         }
 
-        .target-btn {
-            padding: 20px 40px;
-            font-size: 24px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        /* 가상 바탕화면 (1024x768 비율 기반) */
+        #desktop {
+            width: 1024px;
+            height: 768px;
+            background-color: var(--desktop-bg);
+            position: relative;
+            margin: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            transform-origin: center;
         }
 
-        /* 상태바 */
-        #status-bar {
-            height: 60px;
-            background: white;
-            border-top: 1px solid #ccc;
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-            gap: 20px;
-        }
-
-        .key-badge {
-            padding: 8px 20px;
-            background: #e9ecef;
-            border: 2px solid #adb5bd;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #adb5bd;
-        }
-
-        .key-badge.on {
-            background: var(--danger-color);
-            color: white;
-            border-color: #a71d2a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 0 #a71d2a;
-        }
-
-        /* 우클릭 메뉴 커스텀 */
-        #custom-menu {
+        /* 아이콘 공통 */
+        .icon {
             position: absolute;
-            display: none;
-            background: white;
-            border: 1px solid #ccc;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
-            padding: 10px 0;
-            z-index: 100;
-            min-width: 150px;
+            width: 80px; height: 90px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            cursor: pointer; user-select: none;
+            border: 2px solid transparent;
+            transition: background 0.2s;
         }
-        .menu-opt {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .menu-opt:hover { background: #f0f0f0; }
+        .icon:hover { background: rgba(255,255,255,0.2); }
+        .icon.selected { background: rgba(255,255,255,0.4); border: 2px solid #fff; }
+        .icon-img { font-size: 40px; margin-bottom: 5px; position: relative; }
+        .icon-name { color: white; font-size: 14px; text-shadow: 1px 1px 2px #000; text-align: center; }
 
-        /* 성공 피드백 */
+        /* 바로가기 화살표 */
+        .shortcut-badge::after {
+            content: '⤴'; position: absolute; left: 0; bottom: 0;
+            background: white; color: blue; font-size: 12px; font-weight: bold;
+            border: 1px solid #000; padding: 0 2px;
+        }
+
+        /* 스크롤/확대 연습용 화면 */
+        #text-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: none; overflow-y: auto; padding: 40px; box-sizing: border-box;
+        }
+
+        /* 키보드 상태 표시 */
+        #key-status {
+            position: absolute; bottom: 30px; right: 30px; display: flex; gap: 10px;
+        }
+        .key { padding: 10px 20px; background: #95a5a6; color: white; border-radius: 5px; font-weight: bold; opacity: 0.3; }
+        .key.active { opacity: 1; background: #e74c3c; transform: translateY(-5px); }
+
+        /* 성공 알림 */
         #success-msg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(40, 167, 69, 0.9);
-            color: white;
-            padding: 30px 60px;
-            border-radius: 50px;
-            font-size: 32px;
-            font-weight: bold;
-            display: none;
-            z-index: 500;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(46, 204, 113, 0.95); color: white;
+            padding: 40px 80px; border-radius: 100px; font-size: 40px; font-weight: bold;
+            display: none; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             pointer-events: none;
         }
 
-        .selected {
-            outline: 3px solid var(--primary-color);
-            background-color: rgba(0, 86, 179, 0.1);
+        /* 드래그 영역 선택 박스 */
+        #selection-box {
+            position: absolute; border: 1px solid #fff; background: rgba(52, 152, 219, 0.3); display: none; pointer-events: none;
         }
 
-        .copy-effect { opacity: 0.7; transform: translate(10px, 10px); }
-        .shortcut-icon::after { content: '⤴'; position: absolute; left: 0; bottom: 20px; background: white; border: 1px solid black; font-size: 12px; }
-
+        /* 우클릭 메뉴 */
+        #context-menu {
+            position: absolute; background: #eee; border: 1px solid #aaa; box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+            display: none; z-index: 1001; padding: 5px 0; min-width: 150px;
+        }
+        .menu-item { padding: 10px 20px; cursor: pointer; color: #333; }
+        .menu-item:hover { background: #3498db; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="app-container">
     <nav>
-        <div class="nav-header">
-            <h2>기초 컨트롤 연습</h2>
-        </div>
-        <div class="menu-list">
-            <div class="menu-section">
-                <h3>마우스 기본</h3>
-                <button class="menu-item" onclick="initExercise('click')">🖱️ 클릭</button>
-                <button class="menu-item" onclick="initExercise('double')">🖱️ 더블 클릭</button>
-                <button class="menu-item" onclick="initExercise('right')">🖱️ 우클릭</button>
-                <button class="menu-item" onclick="initExercise('drag')">🖱️ 드래그 앤 드롭</button>
-                <button class="menu-item" onclick="initExercise('scroll')">🖱️ 스크롤</button>
-                <button class="menu-item" onclick="initExercise('hover')">🖱️ 마우스 오버</button>
-            </div>
-            <div class="menu-section">
-                <h3>키보드 조합</h3>
-                <button class="menu-item" onclick="initExercise('ctrl-click')">⌨️ Ctrl + 클릭</button>
-                <button class="menu-item" onclick="initExercise('shift-click')">⌨️ Shift + 클릭</button>
-                <button class="menu-item" onclick="initExercise('ctrl-drag')">⌨️ Ctrl + 드래그</button>
-                <button class="menu-item" onclick="initExercise('alt-drag')">⌨️ Alt + 드래그</button>
-                <button class="menu-item" onclick="initExercise('ctrl-wheel')">⌨️ Ctrl + 휠</button>
-            </div>
-        </div>
+        <h2>🖱️ 마우스 연습 메뉴</h2>
+        <button class="menu-btn" onclick="setMode('click')">좌클릭 연습</button>
+        <button class="menu-btn" onclick="setMode('double')">더블 클릭 연습</button>
+        <button class="menu-btn" onclick="setMode('right')">우클릭 연습</button>
+        <button class="menu-btn" onclick="setMode('drag')">드래그 앤 드롭</button>
+        <button class="menu-btn" onclick="setMode('scroll')">스크롤 내리기</button>
+        
+        <h2>⌨️ 키보드 조합</h2>
+        <button class="menu-btn" onclick="setMode('ctrl-click')">Ctrl + 클릭 (다중)</button>
+        <button class="menu-btn" onclick="setMode('shift-click')">Shift + 클릭 (범위)</button>
+        <button class="menu-btn" onclick="setMode('ctrl-drag')">Ctrl + 드래그 (선택)</button>
+        <button class="menu-btn" onclick="setMode('alt-drag')">Alt + 드래그 (바로가기)</button>
+        <button class="menu-btn" onclick="setMode('ctrl-wheel')">Ctrl + 휠 (확대/축소)</button>
     </nav>
 
     <main>
-        <div id="instruction-bar">
-            <h2 id="ex-title">환영합니다!</h2>
-            <p id="ex-desc">왼쪽 메뉴에서 연습할 항목을 선택해주세요.</p>
+        <div id="instruction">왼쪽 메뉴를 선택하여 연습을 시작하세요!</div>
+        
+        <div id="desktop">
+            <!-- 아이콘들이 생성되는 곳 -->
+            <div id="text-screen"></div>
+            <div id="selection-box"></div>
         </div>
 
-        <div id="sandbox">
-            <div id="start-screen" style="text-align: center; margin-top: 100px;">
-                <h1 style="font-size: 50px;">👈</h1>
-                <p style="font-size: 24px;">왼쪽의 메뉴를 눌러 연습을 시작하세요.</p>
-            </div>
-        </div>
-
-        <div id="status-bar">
-            <span style="font-weight: bold; font-size: 20px; margin-right: 10px;">키보드 상태:</span>
-            <div id="key-ctrl" class="key-badge">Ctrl</div>
-            <div id="key-shift" class="key-badge">Shift</div>
-            <div id="key-alt" class="key-badge">Alt</div>
+        <div id="key-status">
+            <div id="key-ctrl" class="key">Ctrl</div>
+            <div id="key-shift" class="key">Shift</div>
+            <div id="key-alt" class="key">Alt</div>
         </div>
 
         <div id="success-msg">참 잘하셨습니다! 👍</div>
-        <div id="custom-menu">
-            <div class="menu-opt" onclick="completeEx('복사 완료!')">복사</div>
-            <div class="menu-opt" onclick="completeEx('삭제 완료!')">삭제</div>
-            <div class="menu-opt" onclick="completeEx('이름 바꾸기')">이름 바꾸기</div>
-        </div>
     </main>
 </div>
 
-<script>
-    const sandbox = document.getElementById('sandbox');
-    const title = document.getElementById('ex-title');
-    const desc = document.getElementById('ex-desc');
-    const successMsg = document.getElementById('success-msg');
-    const customMenu = document.getElementById('custom-menu');
+<!-- 우클릭 메뉴 -->
+<div id="context-menu">
+    <div class="menu-item" onclick="onMenuClick()">열기</div>
+    <div class="menu-item" onclick="onMenuClick()">복사</div>
+    <div class="menu-item" onclick="onMenuClick()">이름 바꾸기</div>
+    <div class="menu-item" onclick="onMenuClick()">삭제</div>
+</div>
 
+<script>
+    const desktop = document.getElementById('desktop');
+    const textScreen = document.getElementById('text-screen');
+    const instruction = document.getElementById('instruction');
+    const successMsg = document.getElementById('success-msg');
+    const contextMenu = document.getElementById('context-menu');
+    const selectionBox = document.getElementById('selection-box');
+
+    let currentMode = '';
+    let selectedIcons = new Set();
     let keys = { ctrl: false, shift: false, alt: false };
+    let zoomLevel = 1.0;
+
+    // 초기 해상도 대응 (반응형 축소)
+    function fitDesktop() {
+        const scale = Math.min((window.innerWidth - 320) / 1024, (window.innerHeight - 100) / 768);
+        if (scale < 1) desktop.style.transform = `scale(${scale})`;
+        else desktop.style.transform = `scale(1)`;
+    }
+    window.addEventListener('resize', fitDesktop);
+    fitDesktop();
 
     // 키보드 상태 감지
-    window.addEventListener('keydown', (e) => {
-        if(e.key === 'Control') { keys.ctrl = true; document.getElementById('key-ctrl').classList.add('on'); }
-        if(e.key === 'Shift') { keys.shift = true; document.getElementById('key-shift').classList.add('on'); }
-        if(e.key === 'Alt') { keys.alt = true; document.getElementById('key-alt').classList.add('on'); }
-    });
+    window.addEventListener('keydown', (e) => toggleKey(e, true));
+    window.addEventListener('keyup', (e) => toggleKey(e, false));
 
-    window.addEventListener('keyup', (e) => {
-        if(e.key === 'Control') { keys.ctrl = false; document.getElementById('key-ctrl').classList.remove('on'); }
-        if(e.key === 'Shift') { keys.shift = false; document.getElementById('key-shift').classList.remove('on'); }
-        if(e.key === 'Alt') { keys.alt = false; document.getElementById('key-alt').classList.remove('on'); }
-    });
-
-    function completeEx(text = "참 잘하셨습니다!") {
-        successMsg.innerText = text;
-        successMsg.style.display = 'block';
-        setTimeout(() => { successMsg.style.display = 'none'; }, 1500);
+    function toggleKey(e, isPressed) {
+        if (e.key === 'Control') { keys.ctrl = isPressed; document.getElementById('key-ctrl').classList.toggle('active', isPressed); }
+        if (e.key === 'Shift') { keys.shift = isPressed; document.getElementById('key-shift').classList.toggle('active', isPressed); }
+        if (e.key === 'Alt') { keys.alt = isPressed; document.getElementById('key-alt').classList.toggle('active', isPressed); }
     }
 
-    function clearSandbox() {
-        sandbox.innerHTML = '';
-        sandbox.onmousedown = null;
-        sandbox.onwheel = null;
-        sandbox.oncontextmenu = (e) => e.preventDefault();
-        customMenu.style.display = 'none';
-        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-    }
+    // 아이콘 생성
+    function createIcons() {
+        desktop.innerHTML = '<div id="text-screen"></div><div id="selection-box"></div>';
+        const icons = [
+            ...Array(4).fill({type: 'folder', img: '📁'}),
+            ...Array(9).fill({type: 'file', img: '📄'})
+        ];
 
-    function createObj(type, name, x, y) {
-        const div = document.createElement('div');
-        div.className = 'obj ' + type;
-        div.style.left = x + 'px';
-        div.style.top = y + 'px';
-        
-        let icon = '📄';
-        if(type === 'folder') icon = '📁';
-        if(type === 'image') icon = '🖼️';
-        
-        div.innerHTML = `<span class="folder-icon">${icon}</span><span class="obj-label">${name}</span>`;
-        return div;
-    }
-
-    function initExercise(type) {
-        clearSandbox();
-        event.currentTarget.classList.add('active');
-
-        switch(type) {
-            case 'click':
-                title.innerText = "클릭 (좌클릭)";
-                desc.innerText = "가운데 나타난 버튼을 마우스 왼쪽 버튼으로 한 번 눌러보세요.";
-                const btn = document.createElement('button');
-                btn.className = 'target-btn obj';
-                btn.innerText = "나를 클릭하세요";
-                btn.style.left = '40%'; btn.style.top = '40%';
-                btn.onclick = () => completeEx();
-                sandbox.appendChild(btn);
-                break;
-
-            case 'double':
-                title.innerText = "더블 클릭";
-                desc.innerText = "폴더를 빠르게 두 번 연속으로 눌러서 열어보세요.";
-                const f = createObj('folder', '내 사진', 350, 150);
-                f.ondblclick = () => completeEx("폴더가 열렸습니다!");
-                sandbox.appendChild(f);
-                break;
-
-            case 'right':
-                title.innerText = "우클릭 (오른쪽 버튼)";
-                desc.innerText = "폴더 위에 마우스 오른쪽 버튼을 눌러 추가 메뉴를 열어보세요.";
-                const rf = createObj('folder', '중요 문서', 350, 150);
-                rf.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    customMenu.style.display = 'block';
-                    customMenu.style.left = (e.clientX - 300) + 'px';
-                    customMenu.style.top = (e.clientY - 120) + 'px';
-                };
-                sandbox.appendChild(rf);
-                break;
-
-case 'drag':
-    title.innerText = "드래그 앤 드롭";
-    desc.innerText = "파일을 마우스로 꾹 누른 채 '멀리' 끌어서 옮겨보세요. (20% 이상 이동)";
-    
-    // 시작 위치(100, 150)에 객체 생성
-    const startPos = { x: 100, y: 150 };
-    const df = createObj('image', '풍경 사진', startPos.x, startPos.y);
-    
-    let isDragging = false;
-    let offset = { x: 0, y: 0 };
-    let successTriggered = false; // 한 번 성공하면 중복 실행 방지
-
-    df.onmousedown = (e) => {
-        if (successTriggered) return;
-        isDragging = true;
-        offset.x = e.clientX - df.offsetLeft;
-        offset.y = e.clientY - df.offsetTop;
-        df.style.zIndex = 1000; // 드래그 시 맨 위로
-    };
-
-    window.onmousemove = (e) => {
-        if (!isDragging) return;
-
-        // 현재 위치 계산 및 이동
-        const currentX = e.clientX - offset.x;
-        const currentY = e.clientY - offset.y;
-        df.style.left = currentX + 'px';
-        df.style.top = currentY + 'px';
-
-        // 샌드박스 크기 측정
-        const sWidth = sandbox.clientWidth;
-        const sHeight = sandbox.clientHeight;
-
-        // 이동 거리 계산 (절대값)
-        const moveDistX = Math.abs(currentX - startPos.x);
-        const moveDistY = Math.abs(currentY - startPos.y);
-
-        // 성공 조건: 가로 또는 세로로 샌드박스의 20% 이상 이동했을 때 실시간 시각 피드백
-        if (moveDistX > sWidth * 0.2 || moveDistY > sHeight * 0.2) {
-            df.style.outline = "5px solid var(--success-color)"; // 목표 거리 도달 표시
-        } else {
-            df.style.outline = "none";
-        }
-    };
-
-    window.onmouseup = (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-
-        const sWidth = sandbox.clientWidth;
-        const sHeight = sandbox.clientHeight;
-        const moveDistX = Math.abs(df.offsetLeft - startPos.x);
-        const moveDistY = Math.abs(df.offsetTop - startPos.y);
-
-        // 최종 드롭 시점에 20% 이상 이동했는지 확인
-        if ((moveDistX > sWidth * 0.2 || moveDistY > sHeight * 0.2) && !successTriggered) {
-            successTriggered = true;
-            df.style.outline = "none";
-            completeEx("드래그 성공! 아주 잘하셨습니다.");
-        } else if (!successTriggered) {
-            // 충분히 이동하지 않았을 때 안내
-            alert("조금 더 멀리 끌어서 옮겨보세요!");
-        }
-    };
-
-    sandbox.appendChild(df);
-    break;
-
-            case 'scroll':
-                title.innerText = "스크롤 (휠)";
-                desc.innerText = "마우스 가운데 휠을 위아래로 굴려 글을 읽어보세요.";
-                const sDiv = document.createElement('div');
-                sDiv.style.padding = '30px';
-                sDiv.style.fontSize = '24px';
-                sDiv.style.height = '100%';
-                sDiv.style.overflowY = 'scroll';
-                sDiv.innerHTML = "휠을 아래로 굴리세요...<br><br>".repeat(30) + "<h1 style='color:red'>끝까지 보셨네요! 성공!</h1>";
-                sDiv.onscroll = () => {
-                    if(sDiv.scrollTop + sDiv.clientHeight >= sDiv.scrollHeight - 5) completeEx();
-                }
-                sandbox.appendChild(sDiv);
-                break;
-
-            case 'hover':
-                title.innerText = "마우스 오버 (올려두기)";
-                desc.innerText = "클릭하지 말고 마우스 화살표를 아이콘 위에 가만히 올려보세요.";
-                const hf = createObj('folder', '마우스 올려봐요', 350, 150);
-                hf.onmouseenter = () => {
-                    const tip = document.createElement('div');
-                    tip.id = "tooltip";
-                    tip.innerText = "좋습니다! 이것이 '설명풍선'입니다.";
-                    tip.style.position = 'absolute';
-                    tip.style.background = 'black';
-                    tip.style.color = 'white';
-                    tip.style.padding = '10px';
-                    tip.style.borderRadius = '5px';
-                    hf.appendChild(tip);
-                };
-                hf.onmouseleave = () => {
-                    const t = document.getElementById('tooltip');
-                    if(t) t.remove();
-                };
-                sandbox.appendChild(hf);
-                break;
-
-            case 'ctrl-click':
-                title.innerText = "Ctrl + 클릭 (개별 선택)";
-                desc.innerText = "Ctrl 키를 누른 상태로 여러 개의 파일을 하나씩 선택해보세요.";
-                for(let i=0; i<5; i++) {
-                    const item = createObj('image', '사진 '+i, 50 + (i*140), 150);
-                    item.onclick = () => {
-                        if(keys.ctrl) {
-                            item.classList.toggle('selected');
-                            completeEx("여러 개가 선택됩니다!");
-                        } else {
-                            alert("Ctrl 키를 누르고 클릭해보세요!");
-                        }
-                    };
-                    sandbox.appendChild(item);
-                }
-                break;
-
-            case 'shift-click':
-                title.innerText = "Shift + 클릭 (범위 선택)";
-                desc.innerText = "1번을 클릭하고, Shift를 누른 채 5번을 클릭해 보세요.";
-                let list = [];
-                for(let i=0; i<5; i++) {
-                    const item = createObj('image', (i+1)+'번 파일', 50 + (i*140), 150);
-                    item.onclick = () => {
-                        if(i===4 && keys.shift) {
-                            list.forEach(el => el.classList.add('selected'));
-                            completeEx("한 번에 다 선택되었습니다!");
-                        } else {
-                            list.forEach(el => el.classList.remove('selected'));
-                            item.classList.add('selected');
-                        }
-                    };
-                    list.push(item);
-                    sandbox.appendChild(item);
-                }
-                break;
-
-            case 'ctrl-drag':
-                title.innerText = "Ctrl + 드래그 (복사)";
-                desc.innerText = "Ctrl 키를 누른 채 파일을 옆으로 끌어보세요. 복사본이 생깁니다.";
-                const cf = createObj('image', '원본 파일', 100, 150);
-                setupDrag(cf, 'copy');
-                sandbox.appendChild(cf);
-                break;
-
-case 'alt-drag':
-    title.innerText = "Alt + 드래그 (바로가기 만들기)";
-    desc.innerText = "1. [Alt] 키를 꾹 누르세요. 2. 파일을 다른 곳으로 끌어서 놓으세요. 화살표 모양의 '바로가기'가 생깁니다.";
-
-    // 1. 연습 환경 셋팅: 여러 개의 파일과 폴더 배치
-    const items = [
-        { type: 'folder', name: '가족 사진', x: 50, y: 50 },
-        { type: 'image', name: '여행 메모', x: 200, y: 50 },
-        { type: 'folder', name: '중요 서류', x: 50, y: 180 },
-        { type: 'image', name: '할일 목록', x: 200, y: 180 }
-    ];
-
-    items.forEach(data => {
-        const obj = createObj(data.type, data.name, data.x, data.y);
-        sandbox.appendChild(obj);
-
-        let isDragging = false;
-        let offset = { x: 0, y: 0 };
-        let ghostObj = null; // 드래그 중 보여줄 그림자(복제본)
-
-        obj.onmousedown = (e) => {
-            // Alt 키를 누르지 않았을 때 안내
-            if (!keys.alt) {
-                alert("키보드 왼쪽의 [Alt] 키를 먼저 꾹 누른 상태에서 끌어보세요!");
-                return;
-            }
-
-            isDragging = true;
-            offset.x = e.clientX - obj.offsetLeft;
-            offset.y = e.clientY - obj.offsetTop;
+        icons.forEach((data, i) => {
+            const div = document.createElement('div');
+            div.className = `icon ${data.type}`;
+            div.dataset.index = i;
+            div.style.left = (20 + (Math.floor(i / 6) * 100)) + 'px';
+            div.style.top = (20 + (i % 6 * 110)) + 'px';
+            div.innerHTML = `<div class="icon-img">${data.img}</div><div class="icon-name">${data.type === 'folder' ? '폴더' : '파일'} ${i+1}</div>`;
             
-            // 드래그 중임을 알리는 반투명 복제본 생성
-            ghostObj = obj.cloneNode(true);
-            ghostObj.style.opacity = "0.5";
-            ghostObj.style.position = "absolute";
-            ghostObj.style.zIndex = "1000";
-            ghostObj.classList.add('shortcut-icon'); // 화살표 표시 클래스 미리 적용
-            sandbox.appendChild(ghostObj);
+            // 이벤트 연결
+            div.onclick = (e) => handleIconClick(e, div);
+            div.ondblclick = () => handleIconDblClick(div);
+            div.oncontextmenu = (e) => handleIconRightClick(e, div);
+            setupDragAndDrop(div);
+
+            desktop.appendChild(div);
+        });
+    }
+
+    function showSuccess() {
+        successMsg.style.display = 'block';
+        setTimeout(() => successMsg.style.display = 'none', 1500);
+    }
+
+    // 모드 설정
+    function setMode(mode) {
+        currentMode = mode;
+        selectedIcons.clear();
+        zoomLevel = 1.0;
+        createIcons();
+        textScreen.style.display = 'none';
+        contextMenu.style.display = 'none';
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        switch(mode) {
+            case 'click': instruction.innerText = "마우스 왼쪽 버튼으로 아무 폴더나 파일을 한 번 눌러보세요."; break;
+            case 'double': instruction.innerText = "빠르게 두 번(더블 클릭) 눌러서 항목을 실행해 보세요."; break;
+            case 'right': instruction.innerText = "항목 위에 마우스 오른쪽 버튼을 눌러 메뉴를 띄워보세요."; break;
+            case 'drag': instruction.innerText = "파일을 꾹 눌러서 다른 '폴더' 위로 끌어다 놓으세요."; break;
+            case 'scroll': 
+                instruction.innerText = "휠을 굴려 문서의 맨 아래까지 내려가보세요.";
+                setupScrollScreen();
+                break;
+            case 'ctrl-click': instruction.innerText = "Ctrl 키를 누른 상태로 파일 3개를 각각 클릭해 보세요."; break;
+            case 'shift-click': instruction.innerText = "첫 번째 파일을 누르고, Shift 키를 누른 채 마지막 파일을 눌러보세요."; break;
+            case 'ctrl-drag': instruction.innerText = "Ctrl 키를 누른 상태로 빈 공간을 드래그하여 3개 이상의 파일을 감싸보세요."; setupMarquee(); break;
+            case 'alt-drag': instruction.innerText = "Alt 키를 누른 채 파일을 옆으로 드래그해 보세요. 바로가기가 생깁니다."; break;
+            case 'ctrl-wheel': 
+                instruction.innerText = "Ctrl 키를 누른 채 휠을 위아래로 굴려 글자를 확대/축소해 보세요.";
+                setupScrollScreen();
+                break;
+        }
+    }
+
+    // --- 액션 핸들러들 ---
+
+    function handleIconClick(e, el) {
+        if (currentMode === 'click') showSuccess();
+        
+        if (currentMode === 'ctrl-click' && keys.ctrl) {
+            el.classList.toggle('selected');
+            if (el.classList.contains('selected')) selectedIcons.add(el);
+            else selectedIcons.delete(el);
+            if (selectedIcons.size >= 3) showSuccess();
+        }
+
+        if (currentMode === 'shift-click' && keys.shift) {
+            const icons = Array.from(document.querySelectorAll('.icon'));
+            const lastIdx = parseInt(el.dataset.index);
+            icons.forEach(icon => {
+                const idx = parseInt(icon.dataset.index);
+                if (idx <= lastIdx) icon.classList.add('selected');
+            });
+            showSuccess();
+        }
+    }
+
+    function handleIconDblClick(el) {
+        if (currentMode === 'double') showSuccess();
+    }
+
+    function handleIconRightClick(e, el) {
+        e.preventDefault();
+        if (currentMode === 'right') {
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = (e.clientX - desktop.getBoundingClientRect().left) + 'px';
+            contextMenu.style.top = (e.clientY - desktop.getBoundingClientRect().top) + 'px';
+            showSuccess();
+        }
+    }
+
+    function onMenuClick() { contextMenu.style.display = 'none'; }
+
+    function setupDragAndDrop(el) {
+        let isDragging = false;
+        let startX, startY;
+
+        el.onmousedown = (e) => {
+            if (e.button !== 0) return;
+            isDragging = true;
+            startX = e.clientX - el.offsetLeft;
+            startY = e.clientY - el.offsetTop;
+            el.style.zIndex = 100;
         };
 
         window.onmousemove = (e) => {
-            if (!isDragging || !ghostObj) return;
-
-            const x = e.clientX - offset.x;
-            const y = e.clientY - offset.y;
-
-            // 그림자 객체를 마우스 따라 이동
-            ghostObj.style.left = x + 'px';
-            ghostObj.style.top = y + 'px';
+            if (!isDragging) return;
+            const x = e.clientX - startX;
+            const y = e.clientY - startY;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
         };
 
         window.onmouseup = (e) => {
-            if (!isDragging || !ghostObj) return;
+            if (!isDragging) return;
+            isDragging = false;
 
-            // 완료 조건 체크: Alt 키를 유지하고 있는가?
-            if (keys.alt) {
-                // 실제 바로가기 아이콘 생성 (반투명 해제 및 확정)
-                ghostObj.style.opacity = "1";
-                ghostObj.querySelector('.obj-label').innerText += " - 바로가기";
-                
-                // 성공 메시지
-                completeEx("바로가기 생성 성공! 화살표 아이콘을 확인하세요.");
-            } else {
-                // Alt를 중간에 뗐다면 취소
-                ghostObj.remove();
-                alert("드래그를 마칠 때까지 [Alt] 키를 떼지 마세요!");
+            // Alt 드래그 체크
+            if (currentMode === 'alt-drag' && keys.alt) {
+                const clone = el.cloneNode(true);
+                clone.classList.add('shortcut-badge');
+                clone.querySelector('.icon-name').innerText += " - 바로가기";
+                desktop.appendChild(clone);
+                showSuccess();
             }
 
-            isDragging = false;
-            ghostObj = null;
-        };
-    });
-
-    // 바로가기 아이콘용 화살표 스타일 추가 (CSS)
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .shortcut-icon::before {
-            content: '➚';
-            position: absolute;
-            left: 5px;
-            bottom: 25px;
-            width: 25px;
-            height: 25px;
-            background: white;
-            border: 1px solid #333;
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: blue;
-            z-index: 10;
-        }
-    `;
-    document.head.appendChild(style);
-    break;
-
-            case 'ctrl-wheel':
-                title.innerText = "Ctrl + 휠 (확대/축소)";
-                desc.innerText = "Ctrl 키를 누른 상태에서 휠을 굴려 화면의 글자를 키워보세요.";
-                const zText = document.createElement('div');
-                zText.style.fontSize = '30px';
-                zText.style.textAlign = 'center';
-                zText.style.marginTop = '150px';
-                zText.innerText = "글자 크기가 변합니다";
-                let scale = 1;
-                sandbox.onwheel = (e) => {
-                    if(keys.ctrl) {
-                        e.preventDefault();
-                        if(e.deltaY < 0) scale += 0.1;
-                        else scale -= 0.1;
-                        zText.style.transform = `scale(${scale})`;
-                        completeEx("화면 조절 중...");
+            // 드래그 앤 드롭 체크
+            if (currentMode === 'drag') {
+                const folders = document.querySelectorAll('.folder');
+                folders.forEach(f => {
+                    if (f === el) return;
+                    const rect1 = el.getBoundingClientRect();
+                    const rect2 = f.getBoundingClientRect();
+                    if (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom)) {
+                        el.style.display = 'none';
+                        showSuccess();
                     }
-                };
-                sandbox.appendChild(zText);
-                break;
-        }
+                });
+            }
+        };
     }
 
-    // 드래그 로직 공통
-    function setupDrag(el, mode = 'move') {
-        let isMoving = false;
-        let offset = { x: 0, y: 0 };
+    function setupScrollScreen() {
+        const screen = document.getElementById('text-screen');
+        screen.style.display = 'block';
+        screen.innerHTML = `<h1>📜 연습용 문서</h1>` + `<p style="font-size: 24px;">내용을 확인하려면 아래로 스크롤하세요...</p>`.repeat(50) + `<h2 id="end-mark" style="color:red">문서의 끝입니다! 성공!</h2>`;
+        
+        screen.onscroll = () => {
+            if (currentMode === 'scroll' && screen.scrollTop + screen.clientHeight >= screen.scrollHeight - 10) {
+                showSuccess();
+            }
+        };
 
-        el.onmousedown = (e) => {
-            isMoving = true;
-            offset.x = e.clientX - el.offsetLeft;
-            offset.y = e.clientY - el.offsetTop;
-            
-            if(mode === 'copy' && keys.ctrl) {
-                const clone = el.cloneNode(true);
-                clone.classList.add('copy-effect');
-                sandbox.appendChild(clone);
-                completeEx("복사본 생성!");
+        screen.onwheel = (e) => {
+            if (currentMode === 'ctrl-wheel' && keys.ctrl) {
+                e.preventDefault();
+                if (e.deltaY < 0) zoomLevel += 0.1;
+                else zoomLevel -= 0.1;
+                zoomLevel = Math.max(0.5, Math.min(3, zoomLevel));
+                screen.style.fontSize = (zoomLevel * 100) + '%';
+                showSuccess();
             }
-            if(mode === 'shortcut' && keys.alt) {
-                el.classList.add('shortcut-icon');
-                completeEx("바로가기 만들기!");
-            }
+        };
+    }
+
+    function setupMarquee() {
+        let isDrawing = false;
+        let x1, y1;
+
+        desktop.onmousedown = (e) => {
+            if (currentMode !== 'ctrl-drag' || !keys.ctrl || e.target !== desktop) return;
+            isDrawing = true;
+            x1 = e.clientX - desktop.offsetLeft;
+            y1 = e.clientY - desktop.offsetTop;
+            selectionBox.style.display = 'block';
         };
 
         window.onmousemove = (e) => {
-            if(!isMoving) return;
-            el.style.left = (e.clientX - offset.x) + 'px';
-            el.style.top = (e.clientY - offset.y) + 'px';
+            if (!isDrawing) return;
+            let x2 = e.clientX - desktop.offsetLeft;
+            let y2 = e.clientY - desktop.offsetTop;
+            
+            selectionBox.style.left = Math.min(x1, x2) + 'px';
+            selectionBox.style.top = Math.min(y1, y2) + 'px';
+            selectionBox.style.width = Math.abs(x2 - x1) + 'px';
+            selectionBox.style.height = Math.abs(y2 - y1) + 'px';
+
+            // 선택 감지
+            const box = selectionBox.getBoundingClientRect();
+            let count = 0;
+            document.querySelectorAll('.icon').forEach(icon => {
+                const r = icon.getBoundingClientRect();
+                if (!(r.right < box.left || r.left > box.right || r.bottom < box.top || r.top > box.bottom)) {
+                    icon.classList.add('selected');
+                    count++;
+                } else {
+                    icon.classList.remove('selected');
+                }
+            });
+            if (count >= 3) showSuccess();
         };
 
         window.onmouseup = () => {
-            isMoving = false;
+            isDrawing = false;
+            selectionBox.style.display = 'none';
         };
     }
 
-    // 바탕 클릭 시 메뉴 닫기
-    document.addEventListener('click', () => {
-        customMenu.style.display = 'none';
+    // 바탕 클릭 시 우클릭 메뉴 닫기
+    document.addEventListener('click', (e) => {
+        if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none';
     });
 
+    // 앱 시작 시 초기 클릭 모드 활성화
+    setMode('click');
 </script>
+
 </body>
 </html>
