@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시니어 마우스 & 키보드 컨트롤 연습</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 헤더 설정 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        header h1 { margin: 0; font-size: 24px; }
+
+        /* 메인 레이아웃 */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 왼쪽 메뉴 */
+        nav {
+            width: 280px;
+            background-color: #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #dee2e6;
+        }
+
+        .menu-group { margin-bottom: 20px; }
+        .menu-group h3 { font-size: 18px; color: #555; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        
+        .nav-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { background-color: #d1ecf1; border-color: var(--secondary-color); }
+        .nav-btn.active { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
+
+        /* 연습 영역 (가상 화면) */
+        #practice-area {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        #instruction-box {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #ffc107;
+            margin-bottom: 30px;
+            width: 80%;
+            font-size: 20px;
+            line-height: 1.6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #sandbox {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            background: white;
+            border: 3px dashed #cbd5e0;
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* 연습용 객체들 */
+        .target-btn {
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .folder {
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .folder img { width: 80px; }
+        
+        .draggable {
+            width: 80px;
+            height: 80px;
+            background: #f39c12;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            cursor: move;
+            position: absolute;
+            font-weight: bold;
+        }
+
+        .scroll-box {
+            width: 300px;
+            height: 300px;
+            overflow: auto;
+            border: 2px solid #333;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+        }
+        .grid-item {
+            width: 100px;
+            height: 100px;
+            background: #eee;
+            border: 2px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .grid-item.selected { background-color: #2ecc71; color: white; border-color: #27ae60; }
+
+        /* 커스텀 우클릭 메뉴 */
+        #context-menu {
+            position: absolute;
+            display: none;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        #context-menu div { padding: 10px 20px; cursor: pointer; }
+        #context-menu div:hover { background: #eee; }
+
+        /* 성공 메시지 */
+        #success-overlay {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(39, 174, 96, 0.9);
+            color: white;
+            padding: 30px 60px;
+            border-radius: 50px;
+            font-size: 30px;
+            font-weight: bold;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .key-indicator {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .key-badge {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 0.3;
+        }
+        .key-badge.active { opacity: 1; background: #e74c3c; transform: translateY(-5px); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💻 시니어 마우스 & 키보드 조작 연습 센터</h1>
+</header>
+
+<main>
+    <nav>
+        <div class="menu-group">
+            <h3>1. 마우스 기본</h3>
+            <button class="nav-btn" onclick="loadExercise('click')">좌클릭 연습</button>
+            <button class="nav-btn" onclick="loadExercise('double-click')">더블 클릭 연습</button>
+            <button class="nav-btn" onclick="loadExercise('right-click')">우클릭 연습</button>
+            <button class="nav-btn" onclick="loadExercise('drag')">드래그 앤 드롭</button>
+            <button class="nav-btn" onclick="loadExercise('scroll')">스크롤 연습</button>
+            <button class="nav-btn" onclick="loadExercise('hover')">마우스 오버(호버)</button>
+        </div>
+        <div class="menu-group">
+            <h3>2. 키보드 조합</h3>
+            <button class="nav-btn" onclick="loadExercise('ctrl-click')">Ctrl + 클릭 (개별)</button>
+            <button class="nav-btn" onclick="loadExercise('shift-click')">Shift + 클릭 (범위)</button>
+            <button class="nav-btn" onclick="loadExercise('ctrl-scroll')">Ctrl + 휠 (확대)</button>
+            <button class="nav-btn" onclick="loadExercise('alt-drag')">Alt + 드래그 (바로가기)</button>
+        </div>
+    </nav>
+
+    <div id="practice-area">
+        <div id="instruction-box">
+            왼쪽 메뉴에서 연습하고 싶은 항목을 선택해주세요!
+        </div>
+
+        <div id="sandbox">
+            <!-- 연습용 객체들이 여기에 생성됩니다 -->
+            <div id="start-msg">연습을 시작하려면 메뉴를 클릭하세요</div>
+        </div>
+
+        <div id="success-overlay">참 잘하셨습니다! 👍</div>
+
+        <!-- 실시간 키 눌림 표시 -->
+        <div class="key-indicator">
+            <div id="key-ctrl" class="key-badge">Ctrl</div>
+            <div id="key-shift" class="key-badge">Shift</div>
+            <div id="key-alt" class="key-badge">Alt</div>
+        </div>
+    </div>
+</main>
+
+<!-- 우클릭 커스텀 메뉴 -->
+<div id="context-menu">
+    <div onclick="showSuccess()">복사하기</div>
+    <div onclick="showSuccess()">이름 바꾸기</div>
+    <div onclick="showSuccess()">삭제하기</div>
+</div>
+
+<script>
+    const sandbox = document.getElementById('sandbox');
+    const instruction = document.getElementById('instruction-box');
+    const successOverlay = document.getElementById('success-overlay');
+    const contextMenu = document.getElementById('context-menu');
+
+    // 키보드 상태 감지
+    let keys = { ctrl: false, shift: false, alt: false };
+    window.addEventListener('keydown', (e) => {
+        if(e.key === 'Control') { keys.ctrl = true; document.getElementById('key-ctrl').classList.add('active'); }
+        if(e.key === 'Shift') { keys.shift = true; document.getElementById('key-shift').classList.add('active'); }
+        if(e.key === 'Alt') { keys.alt = true; document.getElementById('key-alt').classList.add('active'); }
+    });
+    window.addEventListener('keyup', (e) => {
+        if(e.key === 'Control') { keys.ctrl = false; document.getElementById('key-ctrl').classList.remove('active'); }
+        if(e.key === 'Shift') { keys.shift = false; document.getElementById('key-shift').classList.remove('active'); }
+        if(e.key === 'Alt') { keys.alt = false; document.getElementById('key-alt').classList.remove('active'); }
+    });
+
+    // 성공 메시지 표시
+    function showSuccess(msg = "참 잘하셨습니다!") {
+        successOverlay.innerText = msg;
+        successOverlay.style.display = 'block';
+        setTimeout(() => { successOverlay.style.display = 'none'; }, 1500);
+    }
+
+    // 연습 문제 로드
+    function loadExercise(type) {
+        // 초기화
+        sandbox.innerHTML = '';
+        contextMenu.style.display = 'none';
+        
+        // 버튼 활성화 표시
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        switch(type) {
+            case 'click':
+                instruction.innerHTML = "<strong>좌클릭:</strong> 파란색 버튼을 마우스 왼쪽 버튼으로 한 번 눌러보세요.";
+                const btn = document.createElement('button');
+                btn.className = 'target-btn';
+                btn.innerText = '여기를 클릭하세요';
+                btn.onclick = () => showSuccess();
+                sandbox.appendChild(btn);
+                break;
+
+            case 'double-click':
+                instruction.innerHTML = "<strong>더블 클릭:</strong> 폴더 아이콘을 빠르게 두 번 연속으로 눌러서 열어보세요.";
+                const folder = document.createElement('div');
+                folder.className = 'folder';
+                folder.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/716/716784.png"><br>내 문서`;
+                folder.ondblclick = () => showSuccess("폴더가 열렸습니다!");
+                sandbox.appendChild(folder);
+                break;
+
+            case 'right-click':
+                instruction.innerHTML = "<strong>우클릭:</strong> 하얀 바탕에서 마우스 오른쪽 버튼을 눌러 메뉴를 띄워보세요.";
+                sandbox.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    contextMenu.style.display = 'block';
+                    contextMenu.style.left = e.pageX + 'px';
+                    contextMenu.style.top = e.pageY + 'px';
+                };
+                break;
+
+            case 'drag':
+                instruction.innerHTML = "<strong>드래그 앤 드롭:</strong> 주황색 상자를 마우스로 꾹 누른 채 오른쪽으로 옮겨보세요.";
+                const dragObj = document.createElement('div');
+                dragObj.className = 'draggable';
+                dragObj.innerText = '나를 이동';
+                dragObj.style.left = '50px';
+                dragObj.style.top = '200px';
+                
+                let isDragging = false;
+                dragObj.onmousedown = () => isDragging = true;
+                window.onmousemove = (e) => {
+                    if(isDragging) {
+                        dragObj.style.left = (e.clientX - sandbox.offsetLeft - 40) + 'px';
+                        dragObj.style.top = (e.clientY - sandbox.offsetTop - 40) + 'px';
+                    }
+                };
+                window.onmouseup = () => { if(isDragging) { isDragging = false; showSuccess("이동 완료!"); } };
+                sandbox.appendChild(dragObj);
+                break;
+
+            case 'scroll':
+                instruction.innerHTML = "<strong>스크롤:</strong> 마우스 휠을 굴려 긴 글의 맨 아래까지 내려가보세요.";
+                const scrollBox = document.createElement('div');
+                scrollBox.className = 'scroll-box';
+                scrollBox.innerHTML = "휠을 아래로 굴리세요...<br>".repeat(50) + "<b style='color:red'>성공! 여기까지 오셨군요!</b>";
+                scrollBox.onscroll = () => {
+                    if (scrollBox.scrollTop + scrollBox.clientHeight >= scrollBox.scrollHeight) showSuccess();
+                };
+                sandbox.appendChild(scrollBox);
+                break;
+
+            case 'hover':
+                instruction.innerHTML = "<strong>마우스 오버:</strong> 클릭하지 말고 마우스를 버튼 위에 올려만 보세요.";
+                const hoverBtn = document.createElement('button');
+                hoverBtn.className = 'target-btn';
+                hoverBtn.innerText = '올려보세요';
+                hoverBtn.onmouseenter = () => {
+                    hoverBtn.innerText = "잘하셨습니다!";
+                    hoverBtn.style.backgroundColor = "#e67e22";
+                };
+                hoverBtn.onmouseleave = () => {
+                    hoverBtn.innerText = "올려보세요";
+                    hoverBtn.style.backgroundColor = var(--secondary-color);
+                };
+                sandbox.appendChild(hoverBtn);
+                break;
+
+            case 'ctrl-click':
+                instruction.innerHTML = "<strong>Ctrl + 클릭:</strong> 키보드 왼쪽 하단 [Ctrl] 키를 누른 상태로 여러 개의 상자를 선택해보세요.";
+                const grid = document.createElement('div');
+                grid.className = 'grid-container';
+                for(let i=0; i<6; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item';
+                    item.innerText = i+1;
+                    item.onclick = (e) => {
+                        if(keys.ctrl) {
+                            item.classList.toggle('selected');
+                            showSuccess("다중 선택 중!");
+                        } else {
+                            alert("Ctrl 키를 누른 상태에서 클릭해보세요!");
+                        }
+                    };
+                    grid.appendChild(item);
+                }
+                sandbox.appendChild(grid);
+                break;
+
+            case 'shift-click':
+                instruction.innerHTML = "<strong>Shift + 클릭:</strong> 1번을 클릭한 뒤, [Shift] 키를 누른 채 6번을 클릭해 한 번에 선택해보세요.";
+                const gridS = document.createElement('div');
+                gridS.className = 'grid-container';
+                let items = [];
+                for(let i=0; i<6; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item';
+                    item.innerText = i+1;
+                    item.onclick = () => {
+                        if(i === 5 && keys.shift) {
+                            items.forEach(el => el.classList.add('selected'));
+                            showSuccess("범위 선택 성공!");
+                        } else {
+                            items[0].classList.add('selected');
+                        }
+                    };
+                    items.push(item);
+                    gridS.appendChild(item);
+                }
+                sandbox.appendChild(gridS);
+                break;
+
+            case 'ctrl-scroll':
+                instruction.innerHTML = "<strong>Ctrl + 휠:</strong> [Ctrl] 키를 누른 채 마우스 휠을 굴려 상자의 크기를 조절해보세요.";
+                const zoomBox = document.createElement('div');
+                zoomBox.className = 'draggable';
+                zoomBox.style.position = 'static';
+                zoomBox.innerText = '크기 조절';
+                let scale = 1;
+                sandbox.onwheel = (e) => {
+                    if(keys.ctrl) {
+                        e.preventDefault();
+                        scale += e.deltaY * -0.001;
+                        scale = Math.min(Math.max(.5, scale), 3);
+                        zoomBox.style.transform = `scale(${scale})`;
+                        showSuccess("화면 확대/축소 중");
+                    }
+                };
+                sandbox.appendChild(zoomBox);
+                break;
+
+            case 'alt-drag':
+                instruction.innerHTML = "<strong>Alt + 드래그:</strong> [Alt] 키를 누른 채 상자를 드래그하면 '바로가기'가 생성되는 것을 확인하세요.";
+                const altObj = document.createElement('div');
+                altObj.className = 'draggable';
+                altObj.innerText = 'Alt와 드래그';
+                altObj.style.left = '100px';
+                altObj.style.top = '150px';
+                
+                altObj.onmousedown = () => {
+                    if(keys.alt) {
+                        showSuccess("바로가기 만들기 성공! (화살표 아이콘 생성)");
+                    } else {
+                        alert("Alt 키를 누르고 드래그 해보세요!");
+                    }
+                };
+                sandbox.appendChild(altObj);
+                break;
+        }
+    }
+
+    // 초기 화면 우클릭 방지 (연습장 외)
+    document.addEventListener('contextmenu', e => {
+        if (!sandbox.contains(e.target)) e.preventDefault();
+    });
+    
+    // 바탕 클릭 시 우클릭 메뉴 닫기
+    document.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
+
+</script>
+
+</body>
+</html>
